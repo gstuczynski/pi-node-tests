@@ -1,0 +1,24 @@
+{
+  "name": "pi-node-tests",
+  "version": "1.0.0",
+  "description": "testing node.js raspberry pi",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyskocz/pi-node-tests.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tyskocz/pi-node-tests/issues"
+  },
+  "homepage": "https://github.com/tyskocz/pi-node-tests#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "johnny-five": "^0.10.6",
+    "raspi-io": "^7.2.3"
+  }
+}
