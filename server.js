@@ -3,19 +3,43 @@ const PORT = 3005; //|| process.env.PORT;
 
 
 var five = require('johnny-five');
-var Raspi = require('raspi-io');
+//var Raspi = require('raspi-io');
 var express = require('express');
 var app = express();
-var led;
+var led, servo;
 
-var board = new five.Board({
-  io: new Raspi()
-});
-var led;
-  board.on('ready', function() {
-    led = new five.Led('P1-13');
- // led.blink();
+var board = new five.Board();
+
+
+
+board.on('ready', function() {
+
+  led = new five.Led(13);
+  servo = new five.Servo(10);
+
+
+  this.repl.inject({
+    servo: servo,
+    led: led
   });
+  });
+
+
+
+
+app.get('/servmove', function (req, res) {
+  servo.to( 90 )
+  //servo.step(10)
+  res.send('servo step')
+})
+app.get('/servmove2', function (req, res) {
+  step(10)
+  res.send('servo step')
+})
+
+
+
+
 
 app.get('/off', function (req, res) {
   led.off();
