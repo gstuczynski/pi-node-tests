@@ -3,10 +3,9 @@ const PORT = 3005; //|| process.env.PORT;
 
 
 var five = require('johnny-five');
-//var Raspi = require('raspi-io');
 var express = require('express');
 var app = express();
-var led, servo;
+var led, servo, proximity;
 
 var board = new five.Board();
 
@@ -16,13 +15,31 @@ board.on('ready', function() {
 
   led = new five.Led(13);
   servo = new five.Servo(10);
-
+  proximity = new five.Proximity({
+    controller: 'HCSR04',
+    pin: 'A0'
+  });
 
   this.repl.inject({
     servo: servo,
     led: led
   });
+
+proximity.on('data', function() {
+    console.log('Proximity: ');
+    console.log('  cm  : ', this.cm);
+    console.log('  in  : ', this.in);
+    console.log('-----------------');
   });
+
+  proximity.on('change', function() {
+    console.log('The obstruction has moved.');
+  });
+
+
+
+  });
+
 
 
 
