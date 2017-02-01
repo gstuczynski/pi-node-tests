@@ -1,11 +1,11 @@
 
 const PORT = 3005; //|| process.env.PORT;
 
-
+//
 var five = require('johnny-five');
 var express = require('express');
 var app = express();
-var led, servo, proximity;
+var led, servo, proximity, relay;
 
 var board = new five.Board();
 
@@ -13,8 +13,9 @@ var board = new five.Board();
 
 board.on('ready', function() {
 
+  relay = new five.Relay(10);
   led = new five.Led(13);
-  servo = new five.Servo(10);
+  //servo = new five.Servo(10);
   proximity = new five.Proximity({
     controller: 'HCSR04',
     pin: 'A0'
@@ -22,21 +23,17 @@ board.on('ready', function() {
 
   this.repl.inject({
     servo: servo,
-    led: led
+    led: led,
+    relay: relay
   });
 
-proximity.on('data', function() {
-    console.log('Proximity: ');
-    console.log('  cm  : ', this.cm);
-    console.log('  in  : ', this.in);
-    console.log('-----------------');
-  });
+
 
   proximity.on('change', function() {
     console.log('The obstruction has moved.');
   });
 
-
+//
 
   });
 
@@ -55,7 +52,10 @@ app.get('/servmove2', function (req, res) {
 })
 
 
-
+app.get('/bulb-toogle', function (req, res) {
+  relay.toggle();
+  res.send('bulb-toogle')
+})
 
 
 app.get('/off', function (req, res) {
@@ -70,7 +70,7 @@ app.get('/blink', function (req, res) {
 led.blink();
 res.send('led blink')
 })
-
+//
 app.listen(PORT, function(){
   console.log('Listening on port: '+ PORT);
 });
