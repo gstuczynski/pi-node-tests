@@ -15,7 +15,19 @@ board.on('ready', function() {
 
   relay = new five.Relay(10);
   led = new five.Led(13);
-  //servo = new five.Servo(10);
+  servo = new five.Servo(12);
+
+motor = new five.Motor({
+  pins:{
+    pwm:3,
+    dir:12
+  },
+  invertPWM: true
+});
+
+
+
+
   proximity = new five.Proximity({
     controller: 'HCSR04',
     pin: 'A0'
@@ -34,6 +46,7 @@ board.on('ready', function() {
   });
 
 //
+  motor.stop();
 
   });
 
