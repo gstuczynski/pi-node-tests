@@ -3,9 +3,8 @@ const PORT = 3005; //|| process.env.PORT;
 
 //
 var five = require('johnny-five');
-var express = require('express');
-var app = express();
-var led, servo, proximity, relay;
+var io = require('socket.io').listen(3333);
+var led, servo, proximity, relay, motor,m;
 
 var board = new five.Board();
 
@@ -15,12 +14,15 @@ board.on('ready', function() {
 
   relay = new five.Relay(10);
   led = new five.Led(13);
-  servo = new five.Servo(12);
+  servo = new five.Servo(8);
+  m = new five.Motor({pins:{pwm: 10, dir:9},invertPWM: true});
+
+
 
 motor = new five.Motor({
   pins:{
-    pwm:3,
-    dir:12
+    pwm: 6,
+    dir: 5
   },
   invertPWM: true
 });
@@ -36,55 +38,29 @@ motor = new five.Motor({
   this.repl.inject({
     servo: servo,
     led: led,
-    relay: relay
+    relay: relay,
+    motor: motor,
+    m:m
   });
 
-
+//m.forward(255)
+//motor.reverse(255);
 
   proximity.on('change', function() {
     console.log('The obstruction has moved.');
   });
 
-//
-  motor.stop();
-
   });
 
 
-
-
-
-app.get('/servmove', function (req, res) {
-  servo.to( 90 )
-  //servo.step(10)
-  res.send('servo step')
-})
-app.get('/servmove2', function (req, res) {
-  step(10)
-  res.send('servo step')
-})
-
-
-app.get('/bulb-toogle', function (req, res) {
-  relay.toggle();
-  res.send('bulb-toogle')
-})
-
-
-app.get('/off', function (req, res) {
-  led.off();
-  res.send('led off')
-})
-app.get('/on', function (req, res) {
-led.on();
-res.send('led on')
-})
-app.get('/blink', function (req, res) {
-led.blink();
-res.send('led blink')
-})
-//
-app.listen(PORT, function(){
-  console.log('Listening on port: '+ PORT);
+io.sockets.on('connection', function (socket) {
+  console.log('connection');
+  socket.on('forward',(data)=> {
+    m.forward(255)
+    motor.forward(255);
+  });
+    socket.on('stop',(data)=> {
+    m.stop();
+    motor.stop();
+  });
 });
-
