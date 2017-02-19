@@ -1,66 +1,109 @@
+const five = require('johnny-five');
+const io = require('socket.io').listen(3333);
+const express = require('express');
+const app = express();
+const request_cli = require('request');
+const nodemailer = require('nodemailer');
 
-const PORT = 3005; //|| process.env.PORT;
 
-//
-var five = require('johnny-five');
-var io = require('socket.io').listen(3333);
-var led, servo, proximity, relay, motor,m;
+var led, servo, proximity, relay, motors={};
 
 var board = new five.Board();
 
-
-
-board.on('ready', function() {
+board.on('ready', ()=> {
+  this.repl = false
 
   relay = new five.Relay(10);
   led = new five.Led(13);
   servo = new five.Servo(8);
-  m = new five.Motor({pins:{pwm: 10, dir:9},invertPWM: true});
+motors={
+  left: new five.Motor({pins:{pwm: 10, dir:9},invertPWM: true}),
+  right: new five.Motor({ pins:{ pwm: 6, dir: 5}, invertPWM: true})
+}
+motors.left.stop()
+motors.right.stop()
+});
 
-
-
-motor = new five.Motor({
-  pins:{
-    pwm: 6,
-    dir: 5
-  },
-  invertPWM: true
+// create reusable transporter object using the default SMTP transport
+let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'tentostertotester@gmail.com',
+        pass: 'toster123'
+    }
 });
 
 
+app.get('/motion', (req, res) => {
+//if get motion, send email and request to esp with time
+
+//nodemdu send as param timer how long it is working, i get this param, convert from ms
+let t = req.query.timer
+let espTimeWork ="NodeMdu is working for "+ Math.round((t/(60*60))%24) + ":"+Math.round((t/(60))%60);
 
 
-  proximity = new five.Proximity({
-    controller: 'HCSR04',
-    pin: 'A0'
-  });
+// setup email data with unicode symbols
+let mailOptions = {
+    from: '"Toster 👻" <tentostertotester@gmail.com>', // sender address
+    to: 'tentostertotester@gmail.com', // list of receivers
+    subject: 'Movement detected', // Subject line
+    html: '<b>Movement detected</b><br />'+espTimeWork // html body
+};
 
-  this.repl.inject({
-    servo: servo,
-    led: led,
-    relay: relay,
-    motor: motor,
-    m:m
-  });
-
-//m.forward(255)
-//motor.reverse(255);
-
-  proximity.on('change', function() {
-    console.log('The obstruction has moved.');
-  });
-
-  });
+// send mail with defined transport object
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        return console.log(error);
+    }
+    console.log('Message %s sent: %s', info.messageId, info.response);
+    console.log(req.query.timer);
+});
 
 
-io.sockets.on('connection', function (socket) {
+    console.log(req.query.time);
+
+
+})
+
+
+app.listen(3000);
+
+
+io.sockets.on('connection', (socket)=> {
   console.log('connection');
   socket.on('forward',(data)=> {
-    m.forward(255)
-    motor.forward(255);
+    motors.left.forward(255)
+    motors.right.forward(255);
+    console.log('forward')
   });
-    socket.on('stop',(data)=> {
-    m.stop();
-    motor.stop();
+    socket.on('reverse',(data)=> {
+    motors.left.reverse(255)
+    motors.right.reverse(255);
+    console.log('reverse')
   });
+  socket.on('stop',(data)=> {
+    motors.left.stop()
+    motors.right.stop();
+   // console.log('stop')
+  })
+  .on('left',()=>{
+    motors.left.reverse(255);
+    motors.right.forward(255);})
+  .on('right',()=>{
+    motors.right.reverse(255);
+    motors.left.forward(255);})
+  .on('bulbOn',()=>{
+    request_cli('http://192.168.0.18/bulbOn',(error, response, body)=> {
+      if (error) {
+        console.log("Error: "+error)
+      }
+    })
+  })
+  .on('bulbOff',()=>{
+    request_cli('http://192.168.0.18/bulbOff',(error, response, body)=> {
+      if (error) {
+        console.log("Error: "+error)
+      }
+    })
+  })
 });

@@ -19,7 +19,12 @@
   "dependencies": {
     "express": "^4.14.0",
     "johnny-five": "^0.10.6",
+    "nodemailer": "^3.1.2",
     "pigpio": "^0.4.0",
+    "raspi-io": "^7.2.3",
+    "request": "^2.79.0",
+    "socket.io": "^1.7.3",
+    "time": "^0.11.4",
     "raspi-io": "^7.2.3"
   },
   "devDependencies": {
